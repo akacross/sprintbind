@@ -29,13 +29,18 @@ local u8 = encoding.UTF8
 local mimgui_addons = require 'mimgui_addons'
 local faicons = require 'fa-icons'
 local ti = require 'tabler_icons'
+local fa = require 'fAwesome5'
 
-local function loadIconicFont(fontSize)
+local function loadIconicFont(fromfile, fontSize, min, max, fontdata)
     local config = imgui.ImFontConfig()
     config.MergeMode = true
     config.PixelSnapH = true
-    local iconRanges = imgui.new.ImWchar[3](ti.min_range, ti.max_range, 0)
-    imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(ti.get_font_data_base85(), fontSize, config, iconRanges)
+    local iconRanges = new.ImWchar[3](min, max, 0)
+	if fromfile then
+		imgui.GetIO().Fonts:AddFontFromFileTTF(fontdata, fontSize, config, iconRanges)
+	else
+		imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(fontdata, fontSize, config, iconRanges)
+	end
 end
 
 local blank = {}
@@ -110,27 +115,12 @@ function apply_custom_style()
    colors[clr.TextSelectedBg]         = ImVec4(0.26, 0.59, 0.98, 0.35)
  end
 
--- imgui.OnInitialize() called only once, before the first render
 imgui.OnInitialize(function()
-	apply_custom_style() -- apply custom style
-	local defGlyph = imgui.GetIO().Fonts.ConfigData.Data[0].GlyphRanges
-	imgui.GetIO().Fonts:Clear() -- clear the fonts
-	local font_config = imgui.ImFontConfig() -- each font has its own config
-	font_config.SizePixels = 14.0;
-	font_config.GlyphExtraSpacing.x = 0.1
-	-- main font
-	local def = imgui.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(0x14) .. '\\arialbd.ttf', font_config.SizePixels, font_config, defGlyph)
-   
-	local config = imgui.ImFontConfig()
-	config.MergeMode = true
-	config.PixelSnapH = true
-	config.FontDataOwnedByAtlas = false
-	config.GlyphOffset.y = 1.0 -- offset 1 pixel from down
-	local fa_glyph_ranges = new.ImWchar[3]({ faicons.min_range, faicons.max_range, 0 })
-	-- icons
-	local faicon = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(faicons.get_font_data_base85(), font_config.SizePixels, config, fa_glyph_ranges)
-	
-	loadIconicFont(14)
+	apply_custom_style()
+
+	loadIconicFont(false, 14.0, faicons.min_range, faicons.max_range, faicons.get_font_data_base85())
+	loadIconicFont(true, 14.0, fa.min_range, fa.max_range, 'moonloader/resource/fonts/fa-solid-900.ttf')
+	loadIconicFont(false, 14.0, ti.min_range, ti.max_range, ti.get_font_data_base85())
 
 	imgui.GetIO().ConfigWindowsMoveFromTitleBarOnly = true
 	imgui.GetIO().IniFilename = nil
